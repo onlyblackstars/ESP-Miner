@@ -10,10 +10,14 @@
 
 static const char *TAG = "ASIC_task";
 
+
 // static bm_job ** active_jobs; is required to keep track of the active jobs since the
 
 void ASIC_task(void *pvParameters)
 {
+
+    //initialize the semaphore
+    GLOBAL_STATE->ASIC_TASK_MODULE.semaphore = xSemaphoreCreateBinary();
 
     GlobalState *GLOBAL_STATE = (GlobalState *)pvParameters;
 
@@ -21,13 +25,16 @@ void ASIC_task(void *pvParameters)
     GLOBAL_STATE->valid_jobs = malloc(sizeof(uint8_t) * 128);
     for (int i = 0; i < 128; i++)
     {
-
         GLOBAL_STATE->ASIC_TASK_MODULE.active_jobs[i] = NULL;
         GLOBAL_STATE->valid_jobs[i] = 0;
     }
 
     SYSTEM_notify_mining_started(GLOBAL_STATE);
     ESP_LOGI(TAG, "ASIC Ready!");
+
+    //log the calculated job frequency
+    ESP_LOGI(TAG, "ASIC Job Frequency: %.2f ms", GLOBAL_STATE->asic_job_frequency_ms);
+
     while (1)
     {
 
@@ -43,6 +50,10 @@ void ASIC_task(void *pvParameters)
         (*GLOBAL_STATE->ASIC_functions.send_work_fn)(GLOBAL_STATE, next_bm_job); // send the job to the ASIC
 
         // Time to execute the above code is ~0.3ms
-        vTaskDelay((GLOBAL_STATE->asic_job_frequency_ms - 0.3) / portTICK_PERIOD_MS);
+        //vTaskDelay((GLOBAL_STATE->asic_job_frequency_ms - 0.3) / portTICK_PERIOD_MS);
+        //for skot's debugging the nonce space time
+        //vTaskDelay(20000 / portTICK_PERIOD_MS); //5s
+        //wait for semaphone to continue
+        xSemaphoreTake(GLOBAL_STATE->ASIC_TASK_MODULE.semaphore, (20000 / portTICK_PERIOD_MS));
     }
 }

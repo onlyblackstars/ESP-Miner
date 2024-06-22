@@ -513,8 +513,10 @@ static uint8_t _send_init(uint64_t frequency, uint16_t asic_count)
 
     BM1366_send_hash_frequency(frequency);
 
-    unsigned char init794[11] = {0x55, 0xAA, 0x51, 0x09, 0x00, 0x10, 0x00, 0x00, 0x15, 0x1C, 0x02};
-    _send_simple(init794, 11);
+    // unsigned char set_10_hash_counting[11] = {0x55, 0xAA, 0x51, 0x09, 0x00, 0x10, 0x00, 0x00, 0x15, 0x1C, 0x02}; //set Nonce range
+    // _send_simple(set_10_hash_counting, 11);
+    unsigned char set_10_hash_counting[6] = {0x00, 0x10, 0x00, 0x0F, 0x00, 0x00}; //set Nonce range
+    _send_BM1366((TYPE_CMD | GROUP_ALL | CMD_WRITE), set_10_hash_counting, 6, false);
 
     unsigned char init795[11] = {0x55, 0xAA, 0x51, 0x09, 0x00, 0xA4, 0x90, 0x00, 0xFF, 0xFF, 0x1C};
     _send_simple(init795, 11);
@@ -640,7 +642,7 @@ void BM1366_send_work(void * pvParameters, bm_job * next_bm_job)
 
     pthread_mutex_lock(&GLOBAL_STATE->valid_jobs_lock);
     GLOBAL_STATE->valid_jobs[job.job_id] = 1;
-    // ESP_LOGI(TAG, "Added Job: %i", job.job_id);
+    ESP_LOGI(TAG, "Send Job: %02X", job.job_id);
     pthread_mutex_unlock(&GLOBAL_STATE->valid_jobs_lock);
 
     _send_BM1366((TYPE_JOB | GROUP_SINGLE | CMD_WRITE), &job, sizeof(BM1366_job), false);
@@ -682,23 +684,22 @@ task_result * BM1366_proccess_work(void * pvParameters)
         return NULL;
     }
 
-    uint8_t job_id = asic_result->job_id;
-    uint8_t rx_job_id = job_id & 0xf8;
-    ESP_LOGI(TAG, "Job ID: %02X, RX: %02X", job_id, rx_job_id);
+    uint8_t job_id = asic_result->job_id & 0xf8;
+    ESP_LOGI(TAG, "Job ID: %02X, Core: %01X", job_id, asic_result->job_id & 0x07);
 
     GlobalState * GLOBAL_STATE = (GlobalState *) pvParameters;
 
-    if (GLOBAL_STATE->valid_jobs[rx_job_id] == 0) {
-        ESP_LOGE(TAG, "Invalid job nonce found, id=%d", rx_job_id);
+    if (GLOBAL_STATE->valid_jobs[job_id] == 0) {
+        ESP_LOGE(TAG, "Invalid job nonce found, 0x%02X", job_id);
         return NULL;
     }
 
-    uint32_t rolled_version = GLOBAL_STATE->ASIC_TASK_MODULE.active_jobs[rx_job_id]->version;
+    uint32_t rolled_version = GLOBAL_STATE->ASIC_TASK_MODULE.active_jobs[job_id]->version;
 
     // // // shift the 16 bit value left 13
     rolled_version = (reverse_uint16(asic_result->version) << 13) | rolled_version;
 
-    result.job_id = rx_job_id;
+    result.job_id = job_id;
     result.nonce = asic_result->nonce;
     result.rolled_version = rolled_version;
 
