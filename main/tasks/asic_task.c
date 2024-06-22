@@ -17,7 +17,7 @@ void ASIC_task(void *pvParameters)
 {
 
     //initialize the semaphore
-    GLOBAL_STATE->ASIC_TASK_MODULE.semaphore = xSemaphoreCreateBinary();
+    //GLOBAL_STATE->ASIC_TASK_MODULE.semaphore = xSemaphoreCreateBinary();
 
     GlobalState *GLOBAL_STATE = (GlobalState *)pvParameters;
 
@@ -52,8 +52,8 @@ void ASIC_task(void *pvParameters)
         // Time to execute the above code is ~0.3ms
         //vTaskDelay((GLOBAL_STATE->asic_job_frequency_ms - 0.3) / portTICK_PERIOD_MS);
         //for skot's debugging the nonce space time
-        //vTaskDelay(20000 / portTICK_PERIOD_MS); //5s
+        vTaskDelay(20000 / portTICK_PERIOD_MS); //5s
         //wait for semaphone to continue
-        xSemaphoreTake(GLOBAL_STATE->ASIC_TASK_MODULE.semaphore, (20000 / portTICK_PERIOD_MS));
+        //xSemaphoreTake(GLOBAL_STATE->ASIC_TASK_MODULE.semaphore, (20000 / portTICK_PERIOD_MS));
     }
 }
