@@ -18,7 +18,7 @@ void create_jobs_task(void *pvParameters)
     while (1)
     {
         mining_notify *mining_notification = (mining_notify *)queue_dequeue(&GLOBAL_STATE->stratum_queue);
-        ESP_LOGI(TAG, "New Work Dequeued %s", mining_notification->job_id);
+        ESP_LOGI(TAG, "New Work Queued: %s", mining_notification->job_id);
 
         uint32_t extranonce_2 = 0;
         while (GLOBAL_STATE->stratum_queue.count < 1 && extranonce_2 < UINT_MAX && GLOBAL_STATE->abandon_work == 0)
