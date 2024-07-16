@@ -65,6 +65,15 @@ static void _init_system(GlobalState * GLOBAL_STATE)
     //set the pool port
     module->pool_port = nvs_config_get_u16(NVS_CONFIG_STRATUM_PORT, CONFIG_STRATUM_PORT);
 
+    // set the fallback pool url
+    module->fallback_pool_url = nvs_config_get_string(NVS_CONFIG_FALLBACK_STRATUM_URL, CONFIG_STRATUM_URL);
+
+    // set the fallback pool port
+    module->fallback_pool_port = nvs_config_get_u16(NVS_CONFIG_FALLBACK_STRATUM_PORT, CONFIG_STRATUM_PORT);
+
+    // initialize using_fallback_pool
+    module->using_fallback_pool = false;
+
     // set the best diff string
     _suffix_string(module->best_nonce_diff, module->best_diff_string, DIFF_STRING_SIZE, 0);
     _suffix_string(module->best_session_nonce_diff, module->best_session_diff_string, DIFF_STRING_SIZE, 0);

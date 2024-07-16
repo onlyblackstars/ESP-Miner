@@ -129,8 +129,17 @@ void stratum_task(void * pvParameters)
             if (GLOBAL_STATE->sock < 0) {
                 ESP_LOGE(TAG, "Unable to create socket: errno %d", errno);
                 if (++retry_attempts > MAX_RETRY_ATTEMPTS) {
-                    ESP_LOGE(TAG, "Max retry attempts reached, restarting...");
-                    esp_restart();
+                    ESP_LOGE(TAG, "Max retry attempts reached, switching to fallback pool");
+                    if (!GLOBAL_STATE->SYSTEM_MODULE.using_fallback_pool) {
+                        GLOBAL_STATE->SYSTEM_MODULE.using_fallback_pool = true;
+                        stratum_url = GLOBAL_STATE->SYSTEM_MODULE.fallback_pool_url;
+                        port = GLOBAL_STATE->SYSTEM_MODULE.fallback_pool_port;
+                        retry_attempts = 0;
+                        break;  // Break out of the inner loop to retry with fallback pool
+                    } else {
+                        ESP_LOGE(TAG, "Already using fallback pool, restarting...");
+                        esp_restart();
+                    }
                 }
                 vTaskDelay(5000 / portTICK_PERIOD_MS);
                 continue;
@@ -162,8 +171,12 @@ void stratum_task(void * pvParameters)
             //mining.suggest_difficulty - ID: 3
             STRATUM_V1_suggest_difficulty(GLOBAL_STATE->sock, STRATUM_DIFFICULTY);
 
-            char * username = nvs_config_get_string(NVS_CONFIG_STRATUM_USER, STRATUM_USER);
-            char * password = nvs_config_get_string(NVS_CONFIG_STRATUM_PASS, STRATUM_PW);
+            char * username = nvs_config_get_string(GLOBAL_STATE->SYSTEM_MODULE.using_fallback_pool ? 
+                                                    NVS_CONFIG_FALLBACK_STRATUM_USER : NVS_CONFIG_STRATUM_USER, 
+                                                    STRATUM_USER);
+            char * password = nvs_config_get_string(GLOBAL_STATE->SYSTEM_MODULE.using_fallback_pool ? 
+                                                    NVS_CONFIG_FALLBACK_STRATUM_PASS : NVS_CONFIG_STRATUM_PASS, 
+                                                    STRATUM_PW);
 
             //mining.authorize - ID: 4
             STRATUM_V1_authenticate(GLOBAL_STATE->sock, username, password);
@@ -238,6 +251,23 @@ void stratum_task(void * pvParameters)
                 close(GLOBAL_STATE->sock);
             }
         }
+
+        // If we've reached this point, we've either failed to connect to the primary pool
+        // or encountered an error. Let's check if we should switch to the fallback pool.
+        if (!GLOBAL_STATE->SYSTEM_MODULE.using_fallback_pool) {
+            ESP_LOGI(TAG, "Switching to fallback pool");
+            GLOBAL_STATE->SYSTEM_MODULE.using_fallback_pool = true;
+            stratum_url = GLOBAL_STATE->SYSTEM_MODULE.fallback_pool_url;
+            port = GLOBAL_STATE->SYSTEM_MODULE.fallback_pool_port;
+        } else {
+            ESP_LOGI(TAG, "Fallback pool failed, reverting to primary pool");
+            GLOBAL_STATE->SYSTEM_MODULE.using_fallback_pool = false;
+            stratum_url = GLOBAL_STATE->SYSTEM_MODULE.pool_url;
+            port = GLOBAL_STATE->SYSTEM_MODULE.pool_port;
+        }
+
+        // Wait before attempting to reconnect
+        vTaskDelay(5000 / portTICK_PERIOD_MS);
     }
     vTaskDelete(NULL);
 }

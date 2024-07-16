@@ -31,16 +31,46 @@
         </div>
 
 
+        <!-- New Fallback Pool Fields -->
         <div class="field grid p-fluid">
-            <label htmlFor="stratumPort" class="col-12 mb-2 md:col-2 md:mb-0">Stratum Port:</label>
+            <label htmlFor="fallbackStratumURL" class="col-12 mb-2 md:col-2 md:mb-0">Fallback Stratum URL:</label>
             <div class="col-12 md:col-10">
-                <input pInputText id="stratumPort" formControlName="stratumPort" type="number" />
+                <input pInputText id="fallbackStratumURL" formControlName="fallbackStratumURL" type="text" />
+                <small>Do not include 'stratum+tcp://' or port.</small>
+            </div>
+        </div>
+
+        <div class="field grid p-fluid">
+            <label htmlFor="fallbackStratumPort" class="col-12 mb-2 md:col-2 md:mb-0">Fallback Stratum Port:</label>
+            <div class="col-12 md:col-10">
+                <input pInputText id="fallbackStratumPort" formControlName="fallbackStratumPort" type="number" />
+            </div>
+        </div>
+
+        <div class="field grid p-fluid">
+            <label htmlFor="fallbackStratumUser" class="col-12 mb-2 md:col-2 md:mb-0">Fallback Stratum User:</label>
+            <div class="col-12 md:col-10">
+                <input pInputText id="fallbackStratumUser" formControlName="fallbackStratumUser" type="text" />
+            </div>
+        </div>
+
+        <div class="field grid p-fluid">
+            <label htmlFor="fallbackStratumPassword" class="col-12 mb-2 md:col-2 md:mb-0">Fallback Stratum Password:</label>
+            <div class="col-12 md:col-10">
+                <input pInputText id="fallbackStratumPassword" formControlName="fallbackStratumPassword" type="password" />
+            </div>
+        </div>
+
+        <div class="field grid p-fluid">
+            <label htmlFor="stratumPort" class="col-12 mb-2 md:col-2 md:mb-0">Second Stratum Port:</label>
+            <div class="col-12 md:col-10">
+                <input pInputText id="fbstratumPort" formControlName="stratumPort" type="number" />
             </div>
         </div>
         <div class="field grid p-fluid">
             <label htmlFor="stratumUser" class="col-12 mb-2 md:col-2 md:mb-0">Stratum User:</label>
             <div class="col-12 md:col-10">
-                <input pInputText id="stratumUser" formControlName="stratumUser" type="text" />
+                <input pInputText id="fbstratumUser" formControlName="stratumUser" type="text" />
             </div>
         </div>
         <div class="field grid p-fluid">

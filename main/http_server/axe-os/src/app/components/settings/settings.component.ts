@@ -71,6 +71,19 @@ export class SettingsComponent {
           ]],
           stratumUser: [info.stratumUser, [Validators.required]],
           stratumPassword: ['password', [Validators.required]],
+          fallbackStratumURL: [info.fallbackStratumURL, [
+            Validators.required,
+            Validators.pattern(/^(?!.*stratum\+tcp:\/\/).*$/),
+            Validators.pattern(/^[^:]*$/),
+          ]],
+          fallbackStratumPort: [info.fallbackStratumPort, [
+            Validators.required,
+            Validators.pattern(/^[^:]*$/),
+            Validators.min(0),
+            Validators.max(65353)
+          ]],
+          fallbackStratumUser: [info.fallbackStratumUser, [Validators.required]],
+          fallbackStratumPassword: ['password', [Validators.required]],
           ssid: [info.ssid, [Validators.required]],
           wifiPass: ['password'],
           coreVoltage: [info.coreVoltage, [Validators.required]],
