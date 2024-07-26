@@ -2,6 +2,7 @@
 #include "EMC2302.h"
 #include "INA260.h"
 #include "TPS546.h"
+#include "PAC193x.h"
 #include "TMP1075.h"
 #include "bm1397.h"
 #include "esp_log.h"
@@ -156,6 +157,13 @@ void POWER_MANAGEMENT_task(void * pvParameters)
                 power_management->fan_speed = EMC2302_get_fan_speed(0);
                 power_management->fan_speed = EMC2302_get_fan_speed(1);
                 break;
+            case DEVICE_NANO:
+                // add pac193x code
+                
+                // get the fan RPM
+                power_management->fan_speed = EMC2302_get_fan_speed(0);
+                power_management->fan_speed = EMC2302_get_fan_speed(1);
+                break;    
             default:
         }
 
@@ -300,6 +308,9 @@ void POWER_MANAGEMENT_task(void * pvParameters)
                     //} else {
                     //    EMC2302_set_fan_speed(1, 60);
                     //}
+                    break;
+                case DEVICE_NANO:
+                    EMC2302_set_fan_speed(1, 100);
                     break;
                 default:
             }

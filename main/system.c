@@ -114,6 +114,11 @@ static void _init_system(GlobalState * GLOBAL_STATE)
                 ESP_LOGI(TAG, "Temperature sensor 1: %d", TMP1075_read_temperature(1));
             }
             break;
+        case DEVICE_NANO:
+            // Fan config - Nano has two fans
+            EMC2302_init(nvs_config_get_u16(NVS_CONFIG_INVERT_FAN_POLARITY, 1));
+            EMC2302_get_fan_speed(0);
+            EMC2302_get_fan_speed(1);
         default:
     }
 
